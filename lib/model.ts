@@ -328,9 +328,18 @@ function spearman(a: number[], b: number[]): number {
   const rank = (v: number[]): number[] => {
     const order = v.map((x, i) => [x, i] as [number, number]).sort((p, q) => p[0] - q[0]);
     const r = new Array<number>(v.length);
-    order.forEach(([_, i], j) => {
-      r[i] = j;
-    });
+    // Tied values share the average of the ranks they span (the standard
+    // Spearman): without it, equal predictions get consecutive ranks and the
+    // correlation is overstated. This snapshot has no ties, so the numbers
+    // it reports do not move, but the statistic is correct for any input.
+    let j = 0;
+    while (j < order.length) {
+      let k = j;
+      while (k + 1 < order.length && order[k + 1]![0] === order[j]![0]) k++;
+      const avg = (j + k) / 2;
+      for (let m = j; m <= k; m++) r[order[m]![1]] = avg;
+      j = k + 1;
+    }
     return r;
   };
   const ra = rank(a);
