@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Northstar — Token Launch Radar</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<a class="skip" href="#board">Skip to the board</a>
+<header class="top">
+  <div class="wrap">
+    <p class="eyebrow">Pre-token protocols &middot; ranked by implied launch value</p>
+    <h1>Northstar Token Launch Radar</h1>
+    <p class="lede">Which protocol should you farm next, and what is its launch worth if it
+    launches at the multiple the market already pays launched protocols like it?
+    Every row below is a protocol with no token yet, priced from the sealed
+    snapshot's own figures &mdash; never from a hand-kept list of names.</p>
+    <dl class="stats" id="stats"></dl>
+    <p class="meta" id="meta"></p>
+  </div>
+</header>
+<main class="wrap" id="board" tabindex="-1" aria-busy="true">
+  <section class="card model" id="model" aria-label="The model"></section>
+  <section class="controls" aria-label="Board controls">
+    <label>Search <input id="q" type="search" placeholder="Protocol or category" autocomplete="off"></label>
+    <label>Category <select id="category"><option value="all">All categories</option></select></label>
+    <label>Chain <select id="chain"><option value="all">All chains</option></select></label>
+    <label>Sort by
+      <select id="sort">
+        <option value="implied">Implied value</option>
+        <option value="tvl">TVL</option>
+        <option value="growth">7-day growth</option>
+        <option value="age">Age</option>
+        <option value="multiple">Implied multiple</option>
+      </select>
+    </label>
+    <div class="tabs" role="tablist" aria-label="Views">
+      <button id="tab-board" role="tab" aria-selected="true">Board</button>
+      <button id="tab-live" role="tab" aria-selected="false">Live comparables</button>
+      <button id="tab-method" role="tab" aria-selected="false">Method</button>
+    </div>
+  </section>
+  <section id="view-board" role="tabpanel" aria-label="Ranked board">
+    <div id="detail"></div>
+    <div class="tablewrap"><table id="table"></table></div>
+    <p class="count" id="count"></p>
+  </section>
+  <section id="view-live" role="tabpanel" aria-label="Live comparables" hidden>
+    <h2>Live comparables: what launched tokens actually trade at</h2>
+    <p>The model learns from these &mdash; the snapshot's launched protocols, by market
+    cap. Their market-cap-to-TVL multiples are the comparables behind every implied
+    value on the board. A protocol whose token trades is never ranked as a launch:
+    it is the market's own answer, shown here for comparison.</p>
+    <div class="tablewrap"><table id="livetable"></table></div>
+  </section>
+  <section id="view-method" role="tabpanel" aria-label="Method" hidden>
+    <h2>Method</h2>
+    <h3>The value model</h3>
+    <p>Implied value is a comparables model fit on the snapshot's launched protocols
+    (the 128 in it with a market cap), by ordinary least squares in logs:</p>
+    <p class="formula">log(market cap) = a + b &times; log(effective TVL) + category effect</p>
+    <p>Effective TVL is the reported TVL with half of a 7-day jump discounted: value is
+    put on the TVL that stayed, not on the spike that arrived yesterday. Falls are
+    never rewarded. The fitted slope is about 0.52, so value grows with the square
+    root of TVL, not with TVL itself: a flat multiple overvalues the giants and
+    undervalues the small. The category effect is the median residual of the launched
+    protocols in the category, shrunk toward zero with four pseudo-observations, so a
+    category with one or two launched names carries no effect at all.</p>
+    <h3>What the data says, and what it does not</h3>
+    <ul>
+      <li>Size dominates: log market cap on log TVL has a slope near 0.5 and a
+      correlation near 0.4. Category moves the multiple next: launched Lending names
+      sit near a 0.13 multiple, Dexs near 0.34, RWA near 0.28.</li>
+      <li>Seven-day growth does not lift the multiple in the launched set &mdash; if
+      anything it trims it, because a TVL spike is often mercenary capital. That is
+      why growth enters only as the spike discount above, never as a reward.</li>
+      <li>Age does not predict the multiple at all (correlation about 0.00), so age
+      does not move the value. It sets the farm plan's hold window instead, and it is
+      shown on every row.</li>
+      <li>Chain count does not predict the multiple either. Chains are shown so a
+      reader can farm where they already hold funds.</li>
+    </ul>
+    <h3>The backtest</h3>
+    <p>Before the board is trusted, the fit is checked on the same snapshot by
+    leave-one-out: every launched protocol is held out in turn, the fit is redone
+    without it, and the prediction is scored against its real market cap. The
+    dashboard's model card shows the result beside the same test run on a flat
+    global-median multiple. A model that cannot predict the launches that already
+    happened is not asked to price the ones that have not.</p>
+    <h3>The board</h3>
+    <p>The board covers the whole watchlist (every protocol at or above the
+    $50,000,000 floor with no token and not a wrapped, staked or bridged product of
+    a token that trades) and every other rankable pre-token protocol in the snapshot
+    below the floor &mdash; the early radar. Wrapped, staked and bridged products are
+    left out because their underlying token already trades. Each row carries six farm
+    steps derived from the protocol's own record (category, chains, TVL, age), with
+    what each step costs and how long it takes.</p>
+    <h3>Limits, stated plainly</h3>
+    <ul>
+      <li>Implied value is modelled on circulating market cap, the only value the
+      snapshot records for launched tokens. A fully diluted value would usually be
+      higher.</li>
+      <li>The snapshot is frozen at 2026-11-14. Nothing here is live, and nothing here
+      predicts whether or when a protocol issues a token: the board prices a launch
+      if one happens, at the record as it stands.</li>
+      <li>A farm plan is a starting point from public categories, not financial advice.
+      Never pay to claim an airdrop, and claim only from a link the protocol itself
+      publishes.</li>
+    </ul>
+  </section>
+</main>
+<footer class="wrap">
+  <p>Built from the sealed DefiLlama snapshot of 2026-11-14. No live data, no network.
+  Implied values are this entry's own estimates.</p>
+</footer>
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
